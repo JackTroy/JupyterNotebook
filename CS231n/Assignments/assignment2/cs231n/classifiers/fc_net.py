@@ -256,18 +256,19 @@ class FullyConnectedNet(object):
             baises = self.params['b%d' % i]
             
             if self.use_batchnorm:
-                out_affine, cache = affine_forward(neuron_input, weights, baises)
+                bn_input, cache = affine_forward(neuron_input, weights, baises)
                 caches.append(cache)
-                out_bn, cache = batchnorm_forward(out_affine, self.params['gamma' + str(i)], 
+                relu_input, cache = batchnorm_forward(bn_input, self.params['gamma' + str(i)], 
                                         self.params['beta' + str(i)], self.bn_params[i - 1])
                 caches.append(cache)
-                neuron_input, cache = relu_forward(out_bn)
+                neuron_input, cache = relu_forward(relu_input)
                 caches.append(cache)
             else:
                 neuron_input, cache = affine_relu_forward(neuron_input, weights, baises)
                 caches.append(cache)
             if self.use_dropout:
-                pass
+                neuron_input, cache = dropout_forward(neuron_input, self.dropout_param)
+                caches.append(cache)
             
         scores, cache = affine_forward(neuron_input, self.params['W%d' % (self.num_layers)], 
                                     self.params['b%d' % (self.num_layers)])
@@ -307,10 +308,10 @@ class FullyConnectedNet(object):
                 dneuron_output, dw, db = affine_backward(dneuron_output, caches.pop())
             else:
                 if self.use_dropout:
-                    pass
+                    dneuron_output = dropout_backward(dneuron_output, caches.pop())
                 if self.use_batchnorm:
                     dbn_out = relu_backward(dneuron_output, caches.pop())
-                    daffine_out, dgamma, dbeta = batchnorm_backward_alt(dneuron_output, caches.pop())
+                    daffine_out, dgamma, dbeta = batchnorm_backward_alt(dbn_out, caches.pop())
                     grads['gamma' + str(num_layer)] = dgamma
                     grads['beta' + str(num_layer)] = dbeta
                     dneuron_output, dw, db = affine_backward(daffine_out, caches.pop())
