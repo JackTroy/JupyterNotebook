@@ -190,8 +190,8 @@ class FullyConnectedNet(object):
 
         if use_batchnorm:
             for i in range(1, self.num_layers):
-                self.params['gamma%d' % i] = 1
-                self.params['beta%d' % i] = 0
+                self.params['gamma%d' % i] = np.ones(layers_dim[i])
+                self.params['beta%d' % i] = np.zeros(layers_dim[i])
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -256,7 +256,13 @@ class FullyConnectedNet(object):
             baises = self.params['b%d' % i]
             
             if self.use_batchnorm:
-                pass
+                out_affine, cache = affine_forward(neuron_input, weights, baises)
+                caches.append(cache)
+                out_bn, cache = batchnorm_forward(out_affine, self.params['gamma' + str(i)], 
+                                        self.params['beta' + str(i)], self.bn_params[i - 1])
+                caches.append(cache)
+                neuron_input, cache = relu_forward(out_bn)
+                caches.append(cache)
             else:
                 neuron_input, cache = affine_relu_forward(neuron_input, weights, baises)
                 caches.append(cache)
@@ -303,7 +309,11 @@ class FullyConnectedNet(object):
                 if self.use_dropout:
                     pass
                 if self.use_batchnorm:
-                    pass
+                    dbn_out = relu_backward(dneuron_output, caches.pop())
+                    daffine_out, dgamma, dbeta = batchnorm_backward_alt(dneuron_output, caches.pop())
+                    grads['gamma' + str(num_layer)] = dgamma
+                    grads['beta' + str(num_layer)] = dbeta
+                    dneuron_output, dw, db = affine_backward(daffine_out, caches.pop())
                 else:
                     dneuron_output, dw, db = affine_relu_backward(dneuron_output, caches.pop())
             dw += self.reg * self.params['W%d' % (num_layer)]
