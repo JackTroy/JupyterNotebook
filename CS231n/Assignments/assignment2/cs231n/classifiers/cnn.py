@@ -49,9 +49,30 @@ class ThreeLayerConvNet(object):
         # of the output affine layer.                                              #
         ############################################################################
         C, H, W = input_dim
-        self.params['W1'] = np.random.randn(num_filters, C, H, W)
-        self.params['b1'] = np.zeros(num_filters)
-        self.params['W2'] = 
+        F = num_filters
+        #conv layer
+        HH, WW = filter_size, filter_size
+        W1 = np.random.randn(F, C, HH, WW) * weight_scale
+        b1 = np.zeros(F)
+        H //= 2
+        W //= 2
+
+        #fc layer 1
+        W2 = np.random.randn(F * H * W, hidden_dim) * weight_scale
+        b2 = np.zeros(hidden_dim)
+
+        #fc layer 2
+        W3 = np.random.randn(hidden_dim, num_classes) * weight_scale
+        b3 = np.zeros(num_classes)
+
+        self.params.update({
+                'W1':W1,
+                'b1':b1,
+                'W2':W2,
+                'b2':b2,
+                'W3':W3,
+                'b3':b3
+        })
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -83,7 +104,22 @@ class ThreeLayerConvNet(object):
         # computing the class scores for X and storing them in the scores          #
         # variable.                                                                #
         ############################################################################
-        pass
+        
+        caches = []
+        current_layer = X
+        #conv relu maxpool
+        current_layer, cache = conv_relu_pool_forward(current_layer, W1, b1, conv_param, pool_param)
+        caches.append(cache)
+
+        #fc 1
+        current_layer, cache = affine_relu_forward(current_layer, W2, b2)
+        caches.append(cache)
+
+        #fc 2
+        current_layer, cache = affine_forward(current_layer, W3, b3)
+        caches.append(cache)
+
+        scores = current_layer
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -98,7 +134,32 @@ class ThreeLayerConvNet(object):
         # data loss using softmax, and make sure that grads[k] holds the gradients #
         # for self.params[k]. Don't forget to add L2 regularization!               #
         ############################################################################
-        pass
+        reg_loss = (np.sum(W1**2) + np.sum(W2**2) + np.sum(W3**2)) * 0.5 * self.reg
+        loss, dcurrent_layer = softmax_loss(scores, y)
+        loss += reg_loss
+
+        #fc2
+        dcurrent_layer, dW3, db3 = affine_backward(dcurrent_layer, caches.pop())
+
+        #fc1
+        dcurrent_layer, dW2, db2 = affine_relu_backward(dcurrent_layer, caches.pop())
+
+        #conv relu maxpool
+        dcurrent_layer, dW1, db1 = conv_relu_pool_backward(dcurrent_layer, caches.pop())
+
+        #add reg
+        dW1 += W1 * self.reg
+        dW2 += W2 * self.reg
+        dW3 += W3 * self.reg
+
+        grads.update({
+            'W1':dW1,
+            'b1':db1,
+            'W2':dW2,
+            'b2':db2,
+            'W3':dW3,
+            'b3':db3
+        })
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################

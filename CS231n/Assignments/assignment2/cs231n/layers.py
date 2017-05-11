@@ -449,17 +449,13 @@ def conv_forward_naive(x, w, b, conv_param):
     W_prime = int(1 + (W + 2 * pad - WW) / stride)
     out = np.zeros((N, F, H_prime, W_prime))
     x = np.pad(x, ((0, 0), (0, 0), (pad, pad), (pad, pad)), 'constant', constant_values = (0, 0))
-    for i in range(N):
-        for vertic in range(H_prime):
-            for horiz in range(W_prime):
-                x_horiz = stride * horiz
-                x_vertic = stride * vertic
-                #print(x_horiz, x_vertic)
-                for f in range(F):
-                    #print(x_pad[i, :, x_vertic:(x_vertic + HH), x_horiz:(x_horiz + WW)].shape)
-                    #print(w[f].shape)
-                    #print(np.sum(x_pad[i, :, x_vertic:(x_vertic + HH), x_horiz:(x_horiz + WW)] * w[f]))
-                    out[i, f, vertic, horiz] = np.sum(x[i, :, x_vertic:(x_vertic + HH), x_horiz:(x_horiz + WW)] * w[f]) + b[f]
+    #for i in range(N):
+    for vertic in range(H_prime):
+        for horiz in range(W_prime):
+            x_horiz = stride * horiz
+            x_vertic = stride * vertic
+            for f in range(F):
+                out[:, f, vertic, horiz] = np.sum(x[:, :, x_vertic:(x_vertic + HH), x_horiz:(x_horiz + WW)] * w[f], axis=(1,2,3)) + b[f]
 
     ###########################################################################
     #                             END OF YOUR CODE                            #
