@@ -151,7 +151,7 @@ class ThreeLayerConvNet(object):
         dW1 += W1 * self.reg
         dW2 += W2 * self.reg
         dW3 += W3 * self.reg
-
+        
         grads.update({
             'W1':dW1,
             'b1':db1,
