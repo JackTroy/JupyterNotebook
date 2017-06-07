@@ -34,7 +34,9 @@ def rnn_step_forward(x, prev_h, Wx, Wh, b):
     # hidden state and any values you need for the backward pass in the next_h   #
     # and cache variables respectively.                                          #
     ##############################################################################
-    pass
+    #note the h is a (N, H) matrix
+    next_h = np.tanh(np.dot(prev_h, Wh) + np.dot(x, Wx) + b)
+    cache = (x, prev_h, next_h, Wh, Wx)
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
@@ -63,7 +65,13 @@ def rnn_step_backward(dnext_h, cache):
     # HINT: For the tanh function, you can compute the local derivative in terms #
     # of the output value from tanh.                                             #
     ##############################################################################
-    pass
+    x, prev_h, next_h, Wh, Wx = cache
+    dtanh = (1 - next_h**2) * dnext_h
+    dx = np.dot(dtanh, Wx.T)
+    dprev_h = np.dot(dtanh, Wh.T)
+    dWx = np.dot(x.T, dtanh)
+    dWh = np.dot(prev_h.T, dtanh)
+    db = np.sum(dtanh, axis=0)
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
@@ -94,7 +102,16 @@ def rnn_forward(x, h0, Wx, Wh, b):
     # input data. You should use the rnn_step_forward function that you defined  #
     # above. You can use a for loop to help compute the forward pass.            #
     ##############################################################################
-    pass
+    cache = []
+    N, T, D = x.shape
+    N, H = h0.shape
+    h = np.zeros((N, T, H))
+    prev_h = h0
+    for i in range(T):
+        next_h, i_cache = rnn_step_forward(x[:, i, :], prev_h, Wx, Wh, b)
+        h[:, i, :] += next_h
+        cache.append(i_cache)
+        prev_h = next_h
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
