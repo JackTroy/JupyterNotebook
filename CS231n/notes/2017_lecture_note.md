@@ -14,6 +14,10 @@
 ### Generative Adversarial Networks
 - Game-theoretic approach, best samples! But can be tricky and unstable to train, no inference queries.
 
+## Lecture Note 14 Reinforcement Learning
+- Policy gradients: very general but suffer from high variance so requires a lot of samples. Challenge: sample-efficiency
+- Q-learning: does not always work but when it works, usually more sample-efficient. Challenge: exploration
+
 ## Lecture Note 15 Efficient Methods and Hardware for Deep Learning or Real World Use
 
 ### Part 1: Algorithms for Efficient Inference
@@ -35,3 +39,4 @@
 
 ### Part 4: Hardware for Efficient Training
 - all sorts of powerful hardware
+

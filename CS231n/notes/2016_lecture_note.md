@@ -419,3 +419,30 @@ K = (powers of 2, e.g. 32, 64, 128, 512)
 
 ## Generative Adversarial Nets
 
+# Lecture Note 15 Invited talk from Jeff Dean
+
+## Word Embedding
+- distance means similiar meaning
+- direction has interesting feature, for country &  capital, the vector between than is similiar
+
+## traning speed up
+- model parallelism
+- data parallelism
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
